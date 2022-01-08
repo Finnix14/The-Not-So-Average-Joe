@@ -17,12 +17,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AudioSource walking;
     [SerializeField] private AudioSource jump;
     [SerializeField] private AudioSource attack;
+    [SerializeField] private AudioSource dash;
+    [SerializeField] private AudioSource kick;
 
     public bool canDash = true;
     public float dashTime;
     public float dashSpeed;
     public float dashJumpIncrease;
     public float timeBtwDashes;
+    public int extraJumps = 1;
+
+    int jumpCount = 0;
+    float jumpCoolDown;
 
     void Start()
     {
@@ -46,6 +52,14 @@ public class PlayerController : MonoBehaviour
     {
         attack.Play();
     }
+    private void Dash()
+    {
+        dash.Play();
+    }
+    private void Kick()
+    {
+        kick.Play();
+    }
 
     private void Update()
     {
@@ -53,17 +67,18 @@ public class PlayerController : MonoBehaviour
         {
             isAttacking = true;
             float delay = .5f;
-            Attack();
+            
 
             if (!isGrounded)
             {
                 animator.Play("player flykick");
                 delay = .4f;
-                Attack();
+                Kick();
             }
             else
-            { 
-                int index = UnityEngine.Random.Range(1, 5);
+            {
+                Attack();
+                int index = UnityEngine.Random.Range(1, 4);
                 animator.Play("player attack" + index);
             }
             
@@ -89,14 +104,23 @@ public class PlayerController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
                 DashAbility();
+                Dash();
             }
         }
         
         if (Physics2D.Linecast(transform.position, GroundCheck.position, 1 << LayerMask.NameToLayer("Ground")))
         {
             isGrounded = true;
-
+            jumpCount = 0;
+            jumpCoolDown = Time.time + 0.2f;
         }
+        else if (Time.time < jumpCoolDown)
+        {
+            isGrounded = true;
+        }
+
+
+
         else
         {
             isGrounded = false;
@@ -109,7 +133,7 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKey("d") || Input.GetKey("right"))
         {
-            //RIght
+            //Right
             rb2d.velocity = new Vector2(runspeed, rb2d.velocity.y);
             if (isGrounded && !isAttacking)
                 animator.Play("run");
@@ -147,6 +171,7 @@ public class PlayerController : MonoBehaviour
             if (canDash)
             {
                 StartCoroutine(Dash());
+                Dash();
             }
         }
         IEnumerator Dash()
@@ -157,6 +182,7 @@ public class PlayerController : MonoBehaviour
             yield return new WaitForSeconds(dashTime);
             runspeed = 5;
             jumpforce = 15;
+            Dash();
             yield return new WaitForSeconds(timeBtwDashes);
             canDash = true;
         }
