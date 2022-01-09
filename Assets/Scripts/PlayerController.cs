@@ -25,10 +25,6 @@ public class PlayerController : MonoBehaviour
     public float dashSpeed;
     public float dashJumpIncrease;
     public float timeBtwDashes;
-    public int extraJumps = 1;
-
-    int jumpCount = 0;
-    float jumpCoolDown;
 
     void Start()
     {
@@ -111,16 +107,8 @@ public class PlayerController : MonoBehaviour
         if (Physics2D.Linecast(transform.position, GroundCheck.position, 1 << LayerMask.NameToLayer("Ground")))
         {
             isGrounded = true;
-            jumpCount = 0;
-            jumpCoolDown = Time.time + 0.2f;
+
         }
-        else if (Time.time < jumpCoolDown)
-        {
-            isGrounded = true;
-        }
-
-
-
         else
         {
             isGrounded = false;
